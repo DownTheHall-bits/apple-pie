@@ -417,6 +417,15 @@
                 </form>
             </div>
 
+            <div class="card" id="import-plan-card">
+                <h3 style="margin-top:0; color:var(--primary);">Import Monthly Plans</h3>
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0;">
+                    One-time import that breaks each client's monthly plan into daily/weekly tasks
+                    below. Safe to click more than once — it skips clients and tasks that already exist.
+                </p>
+                <button type="button" onclick="importMonthlyPlans()">Import Nov 2026 Monthly Plans</button>
+            </div>
+
             <div class="card">
                 <h3 style="margin-top:0; color:var(--primary);">Your Client Roster & History</h3>
                 <div id="client-list" style="display: grid; gap: 15px;">
@@ -1011,6 +1020,95 @@
             renderAssignmentDropdown();
             renderClientList();
             renderTasks();
+        }
+
+        // ---- Monthly Plan import (Nov 2026) ----
+        // Sourced from the real client docs in Drive where they existed (Liteco action
+        // plan, MTD Service / MT Distributions content plan) and from the DCC service
+        // contracts for DSG Consulting and Green Nature Landscape, where only the
+        // recurring scope (not exact counts) was defined. "A Better Job" has no scope
+        // document on file, so its items are marked [Draft] — adjust freely in the app.
+        const MONTHLY_PLAN_SEED = {
+            clients: ["Liteco", "Green Nature Landscape", "A Better Job", "DSG Consulting", "Med Tech Distributions", "MTD Service"],
+            tasks: [
+                // Liteco — Faza 1 (nov-dec 2026), din "Action Plan" 30.10.2026
+                { client: "Liteco", text: "Setare standards/frames/tone of voice", freqType: "future", targetDate: "2026-11-13" },
+                { client: "Liteco", text: "Rescriere titluri și meta descrieri (homepage + categorii principale)", freqType: "future", targetDate: "2026-11-14" },
+                { client: "Liteco", text: "Reel 1 — 15 ani, livrare locală", freqType: "future", targetDate: "2026-11-16" },
+                { client: "Liteco", text: "Audit & îmbunătățiri email (gamification discount pe volum)", freqType: "future", targetDate: "2026-11-18" },
+                { client: "Liteco", text: "Optimizare profil Google Business + colectare recenzii", freqType: "monthly", timesPerMonth: 4 },
+                { client: "Liteco", text: "Postări social media (restart)", freqType: "monthly", timesPerMonth: 8 },
+                { client: "Liteco", text: "Audit tehnic (indexare, sitemap, robots.txt, acces crawlere AI)", freqType: "future", targetDate: "2026-11-21" },
+                { client: "Liteco", text: "Reel 2", freqType: "future", targetDate: "2026-11-23" },
+                { client: "Liteco", text: "Reel 3", freqType: "future", targetDate: "2026-11-30" },
+
+                // Green Nature Landscape — scop din contract (postare + reclame social), 600 lei/lună
+                { client: "Green Nature Landscape", text: "Postări social media (poze/video)", freqType: "monthly", timesPerMonth: 4 },
+                { client: "Green Nature Landscape", text: "Gestionare reclame social media", freqType: "monthly", timesPerMonth: 2 },
+
+                // A Better Job — niciun document de scop găsit; draft de pornire
+                { client: "A Better Job", text: "[Draft] Postare job nou / actualizare anunț", freqType: "monthly", timesPerMonth: 4 },
+                { client: "A Better Job", text: "[Draft] Articol blog / ghid pentru candidați (SEO)", freqType: "monthly", timesPerMonth: 2 },
+                { client: "A Better Job", text: "[Draft] Follow-up / outreach candidați", freqType: "monthly", timesPerMonth: 4 },
+
+                // DSG Consulting — scop din contract (postare + reclame social), 1000 lei/lună
+                { client: "DSG Consulting", text: "Postări social media (poze/video)", freqType: "monthly", timesPerMonth: 8 },
+                { client: "DSG Consulting", text: "Gestionare & optimizare reclame social media", freqType: "monthly", timesPerMonth: 4 },
+                { client: "DSG Consulting", text: "Raport lunar performanță campanii", freqType: "monthly", timesPerMonth: 1 },
+
+                // Med Tech Distributions — din "MTD - plan de continut noiembrie 2026" (linia MT Distributions)
+                { client: "Med Tech Distributions", text: "Articol pilon — îngrijirea plăgii, etape", freqType: "future", targetDate: "2026-11-13" },
+                { client: "Med Tech Distributions", text: "Debridare nemedicală (etapa 1 din ghidul de îngrijire a plăgii)", freqType: "future", targetDate: "2026-11-15" },
+                { client: "Med Tech Distributions", text: "Pansamente pentru plăgi (etapa 2) — pending Mediq", freqType: "future", targetDate: "2026-11-17" },
+                { client: "Med Tech Distributions", text: "Îngrijirea după intervenții chirurgicale (etapa 3) — pending Mediq", freqType: "future", targetDate: "2026-11-19" },
+                { client: "Med Tech Distributions", text: "Compresie (etapa 4)", freqType: "future", targetDate: "2026-11-21" },
+                { client: "Med Tech Distributions", text: "Cum alegi: gama Mediq — pending Mediq", freqType: "future", targetDate: "2026-11-24" },
+                { client: "Med Tech Distributions", text: "Cum alegi: gama Ovik Health", freqType: "future", targetDate: "2026-11-26" },
+                { client: "Med Tech Distributions", text: "Cum alegi: gama Cerdak", freqType: "future", targetDate: "2026-11-28" },
+
+                // MTD Service — din "MTD - plan de continut noiembrie 2026" (liniile Beauty + Instalații)
+                { client: "MTD Service", text: "Control salon înfrumusețare — ce trebuie să ai în regulă", freqType: "future", targetDate: "2026-11-13" },
+                { client: "MTD Service", text: "Pupinel: cât de des se verifică și ce primești după verificare", freqType: "future", targetDate: "2026-11-16" },
+                { client: "MTD Service", text: "Calitatea gazelor medicale: ce verifici la 3 luni și ce anual", freqType: "future", targetDate: "2026-11-18" },
+                { client: "MTD Service", text: "Verificarea prizei de pământ (PRAM) în clinici (+ verificare ANRE)", freqType: "future", targetDate: "2026-11-20" },
+                { client: "MTD Service", text: "Console și rampe de fluide medicale: semne că au nevoie de service", freqType: "once" }
+            ]
+        };
+
+        function importMonthlyPlans() {
+            let addedClients = 0, addedTasks = 0, skippedTasks = 0;
+
+            MONTHLY_PLAN_SEED.clients.forEach(name => {
+                const exists = clients.find(c => c.name.trim().toLowerCase() === name.toLowerCase());
+                if (!exists) {
+                    clients.push({ id: Date.now() + Math.floor(Math.random() * 100000), name });
+                    addedClients++;
+                }
+            });
+
+            MONTHLY_PLAN_SEED.tasks.forEach(item => {
+                const clientObj = clients.find(c => c.name.trim().toLowerCase() === item.client.toLowerCase());
+                if (!clientObj) return;
+                const dup = tasks.find(t => t.assignment == clientObj.id && t.text.trim().toLowerCase() === item.text.trim().toLowerCase());
+                if (dup) { skippedTasks++; return; }
+                tasks.push({
+                    id: Date.now() + Math.floor(Math.random() * 100000),
+                    text: item.text,
+                    assignment: clientObj.id,
+                    freqType: item.freqType,
+                    selectedDays: item.selectedDays || [],
+                    targetDate: item.targetDate || null,
+                    timesPerMonth: item.timesPerMonth || null,
+                    completed: false,
+                    timestamp: null,
+                    postponedDate: null,
+                    completedDates: []
+                });
+                addedTasks++;
+            });
+
+            saveToSheets();
+            alert(`Imported ${addedClients} new client(s) and ${addedTasks} new task(s).` + (skippedTasks > 0 ? ` (${skippedTasks} already existed and were skipped.)` : ''));
         }
 
         fetchFromSheets();
