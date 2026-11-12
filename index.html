@@ -1078,10 +1078,15 @@
             ]
         };
 
-        function importMonthlyPlans() {
+        // onlyClients: optional array of client names to limit the import to (used for
+        // the silent auto-import below). Omit (or call with no args) to import everyone
+        // in the seed — that's what the "Import Monthly Plans" button does.
+        function importMonthlyPlans(onlyClients, silent) {
             let addedClients = 0, addedTasks = 0, skippedTasks = 0;
+            const filter = onlyClients ? onlyClients.map(c => c.toLowerCase()) : null;
 
             MONTHLY_PLAN_SEED.clients.forEach(name => {
+                if (filter && !filter.includes(name.toLowerCase())) return;
                 const exists = clients.find(c => c.name.trim().toLowerCase() === name.toLowerCase());
                 if (!exists) {
                     clients.push({ id: Date.now() + Math.floor(Math.random() * 100000), name });
@@ -1090,6 +1095,7 @@
             });
 
             MONTHLY_PLAN_SEED.tasks.forEach(item => {
+                if (filter && !filter.includes(item.client.toLowerCase())) return;
                 const clientObj = clients.find(c => c.name.trim().toLowerCase() === item.client.toLowerCase());
                 if (!clientObj) return;
                 const dup = tasks.find(t => t.assignment == clientObj.id && t.text.trim().toLowerCase() === item.text.trim().toLowerCase());
@@ -1110,11 +1116,24 @@
                 addedTasks++;
             });
 
-            saveToSheets();
-            alert(`Imported ${addedClients} new client(s) and ${addedTasks} new task(s).` + (skippedTasks > 0 ? ` (${skippedTasks} already existed and were skipped.)` : ''));
+            if (addedClients > 0 || addedTasks > 0) {
+                saveToSheets();
+            } else {
+                render();
+            }
+
+            if (!silent) {
+                alert(`Imported ${addedClients} new client(s) and ${addedTasks} new task(s).` + (skippedTasks > 0 ? ` (${skippedTasks} already existed and were skipped.)` : ''));
+            }
         }
 
-        fetchFromSheets();
+        fetchFromSheets().then(() => {
+            // Auto-import Liteco & MTD Service tasks on next load, silently and
+            // idempotently (Liviu asked for these two on 12.11.2026 without wanting
+            // to click the import button himself). Safe to leave running on every
+            // load — it's a no-op once those tasks already exist.
+            importMonthlyPlans(["Liteco", "MTD Service"], true);
+        });
     </script>
 </body>
 </html>
