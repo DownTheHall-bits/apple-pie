@@ -453,7 +453,12 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwgtXhoNiEyXKi4nIweq87j8VczLygzU60WyUtze7Je1XPQj39b0Qhj2d5oPhdpZc8Y/exec";
-        
+        // Shared secret checked by the Apps Script backend, so the public URL alone
+        // (visible in this public repo's source) can't be used to read/write the
+        // synced data. Must match SECRET_KEY in the Apps Script project — see
+        // README.md for the one-time setup to add that check on the script side.
+        const SYNC_KEY = "3spkKNdZdeQstmnwgTWmL6FzXC48Lc3J";
+
         let clients = JSON.parse(localStorage.getItem('focus_flow_clients')) || [];
         let tasks = JSON.parse(localStorage.getItem('focus_flow_tasks_v12')) || [];
         let archive = JSON.parse(localStorage.getItem('focus_flow_archive_v12')) || [];
@@ -470,7 +475,7 @@
         async function fetchFromSheets() {
             const statusEl = document.getElementById('sync-status');
             try {
-                const response = await fetch(API_URL);
+                const response = await fetch(API_URL + "?key=" + encodeURIComponent(SYNC_KEY));
                 if (response.ok) {
                     const data = await response.json();
                     if (data.clients && data.tasks) {
@@ -508,7 +513,7 @@
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ clients, tasks, archive })
+                    body: JSON.stringify({ key: SYNC_KEY, clients, tasks, archive })
                 });
                 statusEl.innerText = "🟢 Sheets Connected";
             } catch (err) {
