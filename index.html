@@ -424,6 +424,7 @@
                     below. Safe to click more than once — it skips clients and tasks that already exist.
                 </p>
                 <button type="button" onclick="importMonthlyPlans()">Import Nov 2026 Monthly Plans</button>
+                <button type="button" onclick="importMonthlyPlans(null, false, DECEMBER_PLAN_SEED)">Import Dec 2026 Monthly Plans</button>
             </div>
 
             <div class="card">
@@ -1083,14 +1084,35 @@
             ]
         };
 
+        // ---- Monthly Plan import (Dec 2026) ----
+        // Entities get added here as Liviu approves their December plan (one entity at a
+        // time, per the monthly planning cycle) — not all at once. First approved:
+        // Project Care HR (25.11.2026): FB/IG/LinkedIn page setup, Google Business Profile
+        // video verification, then recurring social posting. Posting cadence (8x/month)
+        // was proposed as a default and accepted; adjust freely in the app if it changes.
+        const DECEMBER_PLAN_SEED = {
+            clients: ["Project Care HR"],
+            tasks: [
+                { client: "Project Care HR", text: "Creare/configurare pagină Facebook", freqType: "future", targetDate: "2026-12-01" },
+                { client: "Project Care HR", text: "Creare/configurare pagină Instagram", freqType: "future", targetDate: "2026-12-01" },
+                { client: "Project Care HR", text: "Creare/configurare pagină LinkedIn (company page)", freqType: "future", targetDate: "2026-12-02" },
+                { client: "Project Care HR", text: "Verificare Google Business Profile prin video", freqType: "future", targetDate: "2026-12-03" },
+                { client: "Project Care HR", text: "Postări social media (Facebook + Instagram + LinkedIn)", freqType: "monthly", timesPerMonth: 8 }
+            ]
+        };
+
         // onlyClients: optional array of client names to limit the import to (used for
-        // the silent auto-import below). Omit (or call with no args) to import everyone
-        // in the seed — that's what the "Import Monthly Plans" button does.
-        function importMonthlyPlans(onlyClients, silent) {
+        // the silent auto-import below). seed: which plan seed to import from — defaults
+        // to MONTHLY_PLAN_SEED (Nov 2026) for backwards compatibility with the "Import Nov
+        // 2026 Monthly Plans" button; pass DECEMBER_PLAN_SEED (or a later month's seed) to
+        // import from that one instead. Omit onlyClients (or call with no args) to import
+        // everyone in the seed.
+        function importMonthlyPlans(onlyClients, silent, seed) {
+            seed = seed || MONTHLY_PLAN_SEED;
             let addedClients = 0, addedTasks = 0, skippedTasks = 0;
             const filter = onlyClients ? onlyClients.map(c => c.toLowerCase()) : null;
 
-            MONTHLY_PLAN_SEED.clients.forEach(name => {
+            seed.clients.forEach(name => {
                 if (filter && !filter.includes(name.toLowerCase())) return;
                 const exists = clients.find(c => c.name.trim().toLowerCase() === name.toLowerCase());
                 if (!exists) {
@@ -1099,7 +1121,7 @@
                 }
             });
 
-            MONTHLY_PLAN_SEED.tasks.forEach(item => {
+            seed.tasks.forEach(item => {
                 if (filter && !filter.includes(item.client.toLowerCase())) return;
                 const clientObj = clients.find(c => c.name.trim().toLowerCase() === item.client.toLowerCase());
                 if (!clientObj) return;
@@ -1138,6 +1160,9 @@
             // to click the import button himself). Safe to leave running on every
             // load — it's a no-op once those tasks already exist.
             importMonthlyPlans(["Liteco", "MTD Service"], true);
+            // Auto-import Project Care HR's December plan the same way, once approved
+            // (25.11.2026). Safe to leave running on every load.
+            importMonthlyPlans(["Project Care HR"], true, DECEMBER_PLAN_SEED);
         });
     </script>
 </body>
